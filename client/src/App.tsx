@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
+
 import reactLogo from "./assets/react.svg";
 import viteLogo from "/vite.svg";
 import "./App.css";
 import io from "socket.io-client";
 
 const socket = io("localhost:3000");
+
 function App() {
   const [isConnected, setIsConnected] = useState(socket.connected);
   const [isKaraokeLive, setIsKaraokeLive] = useState(false);
@@ -24,8 +26,9 @@ function App() {
   }, []);
 
   useEffect(() => {
-    socket.on("karaoke:state", (isLive) => {
-      setIsKaraokeLive(isLive);
+    socket.on("karaoke:state", (state) => {
+      console.log(state.isKaraokeLive);
+      setIsKaraokeLive(state.isKaraokeLive);
     });
 
     return () => {

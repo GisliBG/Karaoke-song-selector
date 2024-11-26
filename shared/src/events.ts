@@ -1,3 +1,5 @@
+import { Song } from "./karaoke";
+
 export type TodoID = string;
 
 export interface Todo {
@@ -22,12 +24,18 @@ interface Success<T> {
 export type Response<T> = Error | Success<T>;
 
 export interface ServerEvents {
-  "karaoke:state": (isKaraokeLive: boolean) => void;
+  "karaoke:state": (state: {
+    isKaraokeLive: boolean;
+    setList: Song[];
+    queue: Song[];
+  }) => void;
 }
 
 export interface ClientEvents {
   "karaoke:start": () => void;
   "karaoke:stop": () => void;
+  "song:chosen": (song: Song) => void;
+  "song:next": () => void;
   // "todo:list": (callback: (res: Response<Todo[]>) => void) => void;
 
   // "todo:create": (
