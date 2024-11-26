@@ -1,0 +1,13 @@
+{
+    "compilerOptions": {
+        "declaration": true,             // Generate .d.ts files
+        "emitDeclarationOnly": true,     // Only output type declarations, not JavaScript
+        "strict": true,   
+        "rootDir": "./src",
+        "outDir": "./dist",  
+        "module": "CommonJS",
+        "moduleResolution": "node",   
+        "target": "ESNext"      
+    },
+    "include": ["src/**/*"],           // Include your type definitions
+}  
