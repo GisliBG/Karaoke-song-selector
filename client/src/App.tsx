@@ -1,71 +1,31 @@
-import { useEffect, useState } from "react";
-
-import reactLogo from "./assets/react.svg";
-import viteLogo from "/vite.svg";
+import React from "react";
 import "./App.css";
-import io from "socket.io-client";
-
-const socket = io("localhost:3000");
+import { QRCodeSVG } from "qrcode.react";
 
 function App() {
-  const [isConnected, setIsConnected] = useState(socket.connected);
-  const [isKaraokeLive, setIsKaraokeLive] = useState(false);
-
-  useEffect(() => {
-    socket.on("connect", () => {
-      setIsConnected(true);
-    });
-    socket.on("disconnect", () => {
-      setIsConnected(false);
-    });
-
-    return () => {
-      socket.off("connect");
-      socket.off("disconnect");
+  const [localIpAddress, setLocalIpAddress] = React.useState("");
+  React.useEffect(() => {
+    const fetchHello = async () => {
+      const hello = await fetch("http://localhost:3000");
+      const res = await hello.json();
+      setLocalIpAddress(res.localIp);
     };
+    fetchHello();
   }, []);
 
-  useEffect(() => {
-    socket.on("karaoke:state", (state) => {
-      console.log(state.isKaraokeLive);
-      setIsKaraokeLive(state.isKaraokeLive);
-    });
-
-    return () => {
-      socket.off("karaoke:state");
-    };
-  });
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        {isConnected && (
-          <button
-            onClick={() =>
-              isKaraokeLive
-                ? socket.emit("karaoke:stop")
-                : socket.emit("karaoke:start")
-            }
-          >
-            {isKaraokeLive ? "stop" : "start"} karaoke
-          </button>
-        )}
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
+    <div className="flex flex-col w-full h-full justify-center items-center">
+      <h1>Scan QR code to start jamming!</h1>
+      <QRCodeSVG
+        value={`http://${localIpAddress}:5173/live`}
+        title={"Scan to party!"}
+        size={128}
+        bgColor={"#ffffff"}
+        fgColor={"#000000"}
+        level={"L"}
+        marginSize={0}
+      />
+    </div>
   );
 }
 

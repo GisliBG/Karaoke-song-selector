@@ -2,22 +2,12 @@ import { ClientEvents, ServerEvents } from "shared/dist/events";
 import { Server as HttpServer } from "http";
 import { Server, ServerOptions } from "socket.io";
 import { Song } from "shared/dist/karaoke";
-//import { TodoRepository } from "./todo-management/todo.repository";
-//import createTodoHandlers from "./todo-management/todo.handlers";
 
-export interface Components {
-  //   todoRepository: TodoRepository;
-}
-
-export function createApplication(
+export function setupSockets(
   httpServer: HttpServer,
-  components: Components,
   serverOptions: Partial<ServerOptions> = {}
 ): Server<ClientEvents, ServerEvents> {
   const io = new Server<ClientEvents, ServerEvents>(httpServer, serverOptions);
-
-  // const { createTodo, readTodo, updateTodo, deleteTodo, listTodo } =
-  //   createTodoHandlers(components);
 
   let isKaraokeLive = false;
   const setList: Song[] = [
@@ -25,6 +15,10 @@ export function createApplication(
     { artist: "Rolling Stones", title: "Angel" },
   ];
   const queue: Song[] = [];
+  // Broadcast new state to all clients
+  const emitKaraokeState = () => {
+    io.emit("karaoke:state", { isKaraokeLive, setList, queue });
+  };
   io.on("connection", (socket) => {
     console.log("new connection with ID:", socket.id);
     console.log("state", isKaraokeLive, setList, queue);
@@ -34,7 +28,7 @@ export function createApplication(
       if (!isKaraokeLive) {
         console.log("START");
         isKaraokeLive = true;
-        io.emit("karaoke:state", { isKaraokeLive, setList, queue }); // Broadcast new state to all clients
+        emitKaraokeState();
         console.log("Karaoke started by:", socket.id);
       }
     });
@@ -48,7 +42,7 @@ export function createApplication(
         setList.push({ artist: "Radiohead", title: "Lucky" });
         setList.push({ artist: "Rolling Stones", title: "Angel" });
 
-        io.emit("karaoke:state", { isKaraokeLive, setList, queue }); // Broadcast new state to all clients
+        emitKaraokeState();
         console.log("Karaoke stopped by:", socket.id);
       }
     });
@@ -61,14 +55,14 @@ export function createApplication(
         if (songIndex >= 0) {
           setList.splice(songIndex, 1);
           queue.push(song);
-          io.emit("karaoke:state", { isKaraokeLive, setList, queue }); // Broadcast new state to all clients
+          emitKaraokeState();
         }
       }
     });
 
     socket.on("song:next", () => {
       queue.shift();
-      io.emit("karaoke:state", { isKaraokeLive, setList, queue }); // Broadcast new state to all clients
+      emitKaraokeState();
     });
   });
 

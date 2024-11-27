@@ -1,20 +1,25 @@
 import express from "express";
+import bodyParser from "body-parser";
+import cors from "cors";
 import { createServer } from "http";
-import { createApplication } from "./app";
-// import { InMemoryTodoRepository } from "./todo-management/todo.repository";
+import { setupSockets } from "./sockets";
+import { getLocalIPAddress } from "./utils";
+import { setupEndpoints } from "./endpoints";
 
 const app = express();
-app.use(express.json());
 const httpServer = createServer(app);
+app.use(bodyParser.json());
 
-createApplication(
+app.use(cors({ origin: "http://localhost:5173" }));
+
+setupEndpoints(app);
+
+setupSockets(
   httpServer,
-  {
-    todoRepository: {},
-  },
+
   {
     cors: {
-      origin: ["http://localhost:5173"],
+      origin: ["http://localhost:5173", `http://${getLocalIPAddress()}:5173`],
     },
   }
 );
