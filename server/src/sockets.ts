@@ -11,8 +11,8 @@ export function setupSockets(
 
   let isKaraokeLive = false;
   const setList: Song[] = [
-    { artist: "Radiohead", title: "Lucky" },
-    { artist: "Rolling Stones", title: "Angel" },
+    { id: 1, artist: "Radiohead", title: "Lucky" },
+    { id: 2, artist: "Rolling Stones", title: "Angel" },
   ];
   const queue: Song[] = [];
   // Broadcast new state to all clients
@@ -39,8 +39,8 @@ export function setupSockets(
         isKaraokeLive = false;
         queue.length = 0;
         setList.length = 0;
-        setList.push({ artist: "Radiohead", title: "Lucky" });
-        setList.push({ artist: "Rolling Stones", title: "Angel" });
+        setList.push({ id: 1, artist: "Radiohead", title: "Lucky" });
+        setList.push({ id: 2, artist: "Rolling Stones", title: "Angel" });
 
         emitKaraokeState();
         console.log("Karaoke stopped by:", socket.id);
