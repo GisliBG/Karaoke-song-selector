@@ -10,7 +10,11 @@ const app = express();
 const httpServer = createServer(app);
 app.use(bodyParser.json());
 
-app.use(cors({ origin: "http://localhost:5173" }));
+app.use(
+  cors({
+    origin: ["http://localhost:5173", `http://${getLocalIPAddress()}:5173`],
+  })
+);
 
 setupEndpoints(app);
 

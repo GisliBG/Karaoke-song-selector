@@ -1,5 +1,6 @@
 import { Express } from "express";
 import { getLocalIPAddress } from "./utils";
+import { insertSong } from "./repository/karaoke.repository";
 
 export function setupEndpoints(app: Express) {
   app.get("/", function respondWithLocalIp(req, res) {
@@ -8,6 +9,8 @@ export function setupEndpoints(app: Express) {
   });
 
   app.post("/catalog", function addSongToCatalog(req, res) {
-    console.log(req.body);
+    const { artist, title } = req.body;
+    insertSong(artist, title);
+    res.status(200);
   });
 }
