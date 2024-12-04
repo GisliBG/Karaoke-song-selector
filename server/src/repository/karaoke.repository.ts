@@ -20,3 +20,13 @@ export function insertSong(artist: string, title: string) {
     console.log("Error while inserting new song", error);
   }
 }
+
+export function removeSong(id: string) {
+  try {
+    db.run(`DELETE FROM songs where id = (@id)`, {
+      id,
+    });
+  } catch (error) {
+    console.log("Error while inserting new song", error);
+  }
+}

@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Song } from "shared/dist/karaoke";
 
 async function fetchSongs() {
@@ -13,10 +13,34 @@ async function fetchSongs() {
   return response.json();
 }
 
+async function removeSong(id: number) {
+  const response = await fetch(`http://localhost:3000/catalog/${id}`, {
+    method: "DELETE",
+    headers: {
+      Accept: "application/json",
+      "Content-Type": "application/json",
+    },
+  });
+  if (!response.ok) throw new Error("Failed to delete a song from the catalog");
+
+  return response.json();
+}
+
 export default function CatalogList() {
+  const queryClient = useQueryClient();
+
   const { isPending, isError, data, error } = useQuery({
     queryKey: ["catalog"],
     queryFn: fetchSongs,
+  });
+  const { mutate } = useMutation({
+    mutationFn: (id: number) => removeSong(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["catalog"] });
+    },
+    onError: (error) => {
+      console.log(error);
+    },
   });
 
   if (isPending) {
@@ -47,7 +71,7 @@ export default function CatalogList() {
               <div className='flex justify-center'>
                 <RemoveButton
                   onRemove={function removeSong() {
-                    //Todo remove song
+                    mutate(song.id);
                   }}
                 />
               </div>
