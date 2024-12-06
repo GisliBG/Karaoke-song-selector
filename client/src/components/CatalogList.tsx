@@ -1,8 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Song } from "shared/dist/karaoke";
+import { CatalogSong } from "shared/dist/karaoke";
 
 async function fetchSongs() {
-  const response = await fetch("http://localhost:3000/catalog/", {
+  const response = await fetch("/api/catalog/", {
     headers: {
       Accept: "application/json",
       "Content-Type": "application/json",
@@ -13,8 +13,22 @@ async function fetchSongs() {
   return response.json();
 }
 
+async function setSongForNextKaraoke(data: { id: number; checked: boolean }) {
+  const response = await fetch(`/api/catalog/${data.id}`, {
+    method: "PUT",
+    body: JSON.stringify({ checked: data.checked }),
+    headers: {
+      Accept: "application/json",
+      "Content-Type": "application/json",
+    },
+  });
+  if (!response.ok) throw new Error("Failed to update a song in the catalog");
+
+  return response.json();
+}
+
 async function removeSong(id: number) {
-  const response = await fetch(`http://localhost:3000/catalog/${id}`, {
+  const response = await fetch(`/api/catalog/${id}`, {
     method: "DELETE",
     headers: {
       Accept: "application/json",
@@ -27,20 +41,9 @@ async function removeSong(id: number) {
 }
 
 export default function CatalogList() {
-  const queryClient = useQueryClient();
-
   const { isPending, isError, data, error } = useQuery({
     queryKey: ["catalog"],
     queryFn: fetchSongs,
-  });
-  const { mutate } = useMutation({
-    mutationFn: (id: number) => removeSong(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["catalog"] });
-    },
-    onError: (error) => {
-      console.log(error);
-    },
   });
 
   if (isPending) {
@@ -58,31 +61,25 @@ export default function CatalogList() {
           <th className='text-left'>Artist</th>
           <th className='text-left'>Title</th>
           <th className='text-left'>Remove</th>
-          <th className='text-left'>In setlist</th>
+          <th className='text-left'>Available</th>
         </tr>
       </thead>
       <tbody>
-        {data.songs.map((song: Song) => (
+        {data.songs.map((song: CatalogSong) => (
           <tr key={song.id}>
             <td>{song.artist}</td>
             <td>{song.title}</td>
 
             <td>
               <div className='flex justify-center'>
-                <RemoveButton
-                  onRemove={function removeSong() {
-                    mutate(song.id);
-                  }}
-                />
+                <RemoveSongFromCatalogButton songId={song.id} />
               </div>
             </td>
             <td>
               <div className='flex justify-center'>
-                <SetlistCheckbox
-                  value={false}
-                  onChange={(checked) => {
-                    console.log(checked);
-                  }}
+                <SelectedForKaraokeCheckbox
+                  songId={song.id}
+                  selected={song.selctedForKaraoke}
                 />
               </div>
             </td>
@@ -93,7 +90,32 @@ export default function CatalogList() {
   );
 }
 
-function SetlistCheckbox(props: {
+function SelectedForKaraokeCheckbox(props: {
+  songId: number;
+  selected: boolean;
+}) {
+  const queryClient = useQueryClient();
+  const { mutate } = useMutation({
+    mutationFn: setSongForNextKaraoke,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["catalog"] });
+    },
+    onError: (error) => {
+      console.log(error);
+    },
+  });
+
+  return (
+    <Checkbox
+      value={props.selected}
+      onChange={function changeKaraokeSelection(checked: boolean) {
+        mutate({ id: props.songId, checked });
+      }}
+    />
+  );
+}
+
+function Checkbox(props: {
   onChange: (checked: boolean) => void;
   value: boolean;
 }) {
@@ -102,6 +124,26 @@ function SetlistCheckbox(props: {
       type='checkbox'
       defaultChecked={props.value}
       onChange={(event) => props.onChange(event.target.checked)}
+    />
+  );
+}
+
+function RemoveSongFromCatalogButton(props: { songId: number }) {
+  const queryClient = useQueryClient();
+  const { mutate } = useMutation({
+    mutationFn: (id: number) => removeSong(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["catalog"] });
+    },
+    onError: (error) => {
+      console.log(error);
+    },
+  });
+  return (
+    <RemoveButton
+      onRemove={function removeSong() {
+        mutate(props.songId);
+      }}
     />
   );
 }

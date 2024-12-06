@@ -5,16 +5,16 @@ import { QRCodeSVG } from "qrcode.react";
 function App() {
   const [localIpAddress, setLocalIpAddress] = React.useState("");
   React.useEffect(() => {
-    const fetchHello = async () => {
-      const hello = await fetch("http://localhost:3000");
-      const res = await hello.json();
-      setLocalIpAddress(res.localIp);
+    const fetchLocalIp = async () => {
+      const res = await fetch("/api");
+      const { localIp } = await res.json();
+      setLocalIpAddress(localIp);
     };
-    fetchHello();
+    fetchLocalIp();
   }, []);
 
   return (
-    <div className="flex flex-col w-full h-full justify-center items-center">
+    <div className='flex flex-col w-full h-full justify-center items-center'>
       <h1>Scan QR code to start jamming!</h1>
       <QRCodeSVG
         value={`http://${localIpAddress}:5173/live`}

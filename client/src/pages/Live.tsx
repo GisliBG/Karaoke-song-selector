@@ -3,7 +3,7 @@ import { SongList, SongListItem } from "../components/SongList";
 import { Song } from "shared/dist/karaoke";
 import io from "socket.io-client";
 
-const socket = io("localhost:3000");
+const socket = io("http://localhost:3000");
 export const Live = () => {
   const [isConnected, setIsConnected] = React.useState<boolean>(
     socket.connected
@@ -40,7 +40,7 @@ export const Live = () => {
   }, []);
 
   return isConnected ? (
-    <div className="flex flex-col">
+    <div className='flex flex-col'>
       <div>
         {isKaraokeLive
           ? "Karaoke is live!"

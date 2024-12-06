@@ -3,3 +3,5 @@ export type Song = {
   title: string;
   artist: string;
 };
+
+export type CatalogSong = Song & { selctedForKaraoke: boolean };

@@ -19,7 +19,7 @@ const Input = (
 
 const addSong = async (song: { artist: string; title: string }) => {
   if (song.artist && song.title) {
-    const response = await fetch("http://localhost:3000/catalog/", {
+    const response = await fetch("/api/catalog/", {
       method: "POST",
       headers: {
         Accept: "application/json",
