@@ -7,13 +7,25 @@ import {
   insertSongToKaraoke,
   deleteSongFromKaraoke,
 } from "./repository/karaoke.repository";
-
+import { getKaraokePlaylist } from "./repository/catalog.repository";
 export function setupEndpoints(app: Express) {
   app.get("/", function respondWithLocalIp(req, res) {
     const localIp = getLocalIPAddress();
     res.json({ localIp });
   });
 
+  setupCatalog(app);
+  setupKaraoke(app);
+}
+
+function setupKaraoke(app: Express) {
+  app.get("/playlist", function fetchKaraokePlaylist(req, res) {
+    const playlist = getKaraokePlaylist();
+    res.json({ playlist });
+  });
+}
+
+function setupCatalog(app: Express) {
   app.get("/catalog", function fetchSongsFromCatalog(req, res) {
     const songs = getSongs();
     res.json({ songs });
