@@ -1,9 +1,11 @@
 import { Outlet } from "react-router";
 import { NavLink } from "react-router";
 import { useKaraoke } from "../hooks/useKaraoke";
+import { SongList, SongListItem } from "../components/SongList";
+import { Song } from "shared/dist/karaoke";
 
 export const Band = () => {
-  const { socket, isKaraokeLive, isConnected } = useKaraoke();
+  const { socket, isKaraokeLive, isConnected, queue } = useKaraoke();
   return (
     <div className='flex flex-col'>
       {isConnected ? (
@@ -18,6 +20,15 @@ export const Band = () => {
       {isKaraokeLive ? (
         <div>
           <h2>Karaoke is live!</h2>
+          <SongList>
+            {queue.map((song: Song) => (
+              <SongListItem
+                key={`${song.artist}-${song.title}`}
+                artist={song.artist}
+                title={song.title}
+              />
+            ))}
+          </SongList>
         </div>
       ) : (
         <div>

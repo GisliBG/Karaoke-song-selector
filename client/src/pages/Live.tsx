@@ -3,7 +3,7 @@ import { Song } from "shared/dist/karaoke";
 import { useKaraoke } from "../hooks/useKaraoke";
 
 export const Live = () => {
-  const { isConnected, isKaraokeLive, setList, queue, socket } = useKaraoke();
+  const { isConnected, isKaraokeLive, playlist, queue, socket } = useKaraoke();
 
   return isConnected ? (
     <div className='flex flex-col'>
@@ -25,7 +25,7 @@ export const Live = () => {
       </div>
       <div>
         <SongList>
-          {setList.map((song: Song) => (
+          {playlist.map((song: Song) => (
             <SongListItem
               onClick={() => {
                 if (isKaraokeLive) {

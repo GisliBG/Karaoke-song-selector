@@ -2,6 +2,7 @@ import { ClientEvents, ServerEvents } from "shared/dist/events";
 import { Server as HttpServer } from "http";
 import { Server, ServerOptions } from "socket.io";
 import { Song } from "shared/dist/karaoke";
+import { getKaraokePlaylist } from "./repository/catalog.repository";
 
 export function setupSockets(
   httpServer: HttpServer,
@@ -10,23 +11,21 @@ export function setupSockets(
   const io = new Server<ClientEvents, ServerEvents>(httpServer, serverOptions);
 
   let isKaraokeLive = false;
-  const setList: Song[] = [
-    { id: 1, artist: "Radiohead", title: "Lucky" },
-    { id: 2, artist: "Rolling Stones", title: "Angel" },
-  ];
-  const queue: Song[] = [];
+  let playlist: Song[] = [];
+  let queue: Song[] = [];
   // Broadcast new state to all clients
   const emitKaraokeState = () => {
-    io.emit("karaoke:state", { isKaraokeLive, setList, queue });
+    io.emit("karaoke:state", { isKaraokeLive, playlist, queue });
   };
   io.on("connection", (socket) => {
     console.log("new connection with ID:", socket.id);
-    console.log("state", isKaraokeLive, setList, queue);
-    socket.emit("karaoke:state", { isKaraokeLive, setList, queue });
+    console.log("state", isKaraokeLive, playlist, queue);
+    socket.emit("karaoke:state", { isKaraokeLive, playlist, queue });
 
     socket.on("karaoke:start", () => {
       if (!isKaraokeLive) {
         console.log("START");
+        playlist = getKaraokePlaylist();
         isKaraokeLive = true;
         emitKaraokeState();
         console.log("Karaoke started by:", socket.id);
@@ -38,9 +37,9 @@ export function setupSockets(
         console.log("STOP");
         isKaraokeLive = false;
         queue.length = 0;
-        setList.length = 0;
-        setList.push({ id: 1, artist: "Radiohead", title: "Lucky" });
-        setList.push({ id: 2, artist: "Rolling Stones", title: "Angel" });
+        playlist.length = 0;
+        playlist.push({ id: 1, artist: "Radiohead", title: "Lucky" });
+        playlist.push({ id: 2, artist: "Rolling Stones", title: "Angel" });
 
         emitKaraokeState();
         console.log("Karaoke stopped by:", socket.id);
@@ -49,11 +48,11 @@ export function setupSockets(
 
     socket.on("song:chosen", (song: Song) => {
       if (isKaraokeLive) {
-        const songIndex = setList.findIndex(
+        const songIndex = playlist.findIndex(
           (elem) => elem.artist === song.artist && elem.title === song.title
         );
         if (songIndex >= 0) {
-          setList.splice(songIndex, 1);
+          playlist.splice(songIndex, 1);
           queue.push(song);
           emitKaraokeState();
         }

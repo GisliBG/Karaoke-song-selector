@@ -9,7 +9,7 @@ export const useKaraoke = () => {
     socket.connected
   );
   const [isKaraokeLive, setIsKaraokeLive] = React.useState<boolean>(false);
-  const [setList, setSetlist] = React.useState<Song[]>([]);
+  const [playlist, setPlaylist] = React.useState<Song[]>([]);
   const [queue, setQueue] = React.useState<Song[]>([]);
 
   React.useEffect(() => {
@@ -30,13 +30,13 @@ export const useKaraoke = () => {
     socket.on("karaoke:state", (state) => {
       console.log(state);
       setIsKaraokeLive(state.isKaraokeLive);
-      setSetlist(state.setList);
-      setQueue(state.queue);
+      setPlaylist(state.playlist ?? []);
+      setQueue(state.queue ?? []);
     });
 
     return () => {
       socket.off("karaoke:state");
     };
   }, []);
-  return { isConnected, isKaraokeLive, setList, queue, socket };
+  return { isConnected, isKaraokeLive, playlist, queue, socket };
 };
