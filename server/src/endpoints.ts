@@ -8,6 +8,7 @@ import {
   deleteSongFromKaraoke,
 } from "./repository/karaoke.repository";
 import { getKaraokePlaylist } from "./repository/catalog.repository";
+
 export function setupEndpoints(app: Express) {
   app.get("/", function respondWithLocalIp(req, res) {
     const localIp = getLocalIPAddress();
