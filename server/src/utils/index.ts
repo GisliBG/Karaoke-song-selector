@@ -1,4 +1,5 @@
 import os from "os";
+import { v4 as v4uuid } from "uuid";
 
 export function getLocalIPAddress() {
   const interfaces = os.networkInterfaces();
@@ -15,4 +16,8 @@ export function getLocalIPAddress() {
   }
 
   return "127.0.0.1"; // Fallback to localhost if no network interface found
+}
+
+export function generateId() {
+  return v4uuid();
 }

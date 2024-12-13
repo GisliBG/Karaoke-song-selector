@@ -32,11 +32,21 @@ function run(sql: string, params: any) {
   return db.prepare(sql).run(params);
 }
 
-process.on("SIGINT", function closeConnection() {
+// Close database on exit
+process.on("SIGINT", () => {
+  console.log("Closing database connection...");
   db.close();
+  process.exit(0);
+});
+
+process.on("SIGTERM", () => {
+  console.log("Closing database connection...");
+  db.close();
+  process.exit(0);
 });
 
 export default {
+  db,
   query,
   run,
 };

@@ -3,13 +3,22 @@ import { Server as HttpServer } from "http";
 import { Server, ServerOptions } from "socket.io";
 import { Song } from "shared/dist/karaoke";
 import { getKaraokePlaylist } from "./repository/catalog.repository";
+import { type Request, type RequestHandler } from "express";
+import { generateId } from "./utils";
+
+declare module "express-session" {
+  interface SessionData {
+    user: { id: string; songId?: number };
+  }
+}
 
 export function setupSockets(
   httpServer: HttpServer,
-  serverOptions: Partial<ServerOptions> = {}
+  serverOptions: Partial<ServerOptions> = {},
+  session: RequestHandler | any
 ): Server<ClientEvents, ServerEvents> {
   const io = new Server<ClientEvents, ServerEvents>(httpServer, serverOptions);
-
+  io.engine.use(session);
   let isKaraokeLive = false;
   let playlist: Song[] = [];
   let queue: Song[] = [];
@@ -18,8 +27,18 @@ export function setupSockets(
     io.emit("karaoke:state", { isKaraokeLive, playlist, queue });
   };
   io.on("connection", (socket) => {
-    console.log("new connection with ID:", socket.id);
-    console.log("state", isKaraokeLive, playlist, queue);
+    const req = socket.request as Request;
+    socket.join(req.session.id);
+    if (!req.session.user) {
+      req.session.user = { id: generateId() };
+      req.session.save((err) => {
+        if (err) {
+          console.error("Session save error:", err);
+        } else {
+          console.log("Session saved:", req.session.user);
+        }
+      });
+    }
     socket.emit("karaoke:state", { isKaraokeLive, playlist, queue });
 
     socket.on("karaoke:start", () => {
@@ -38,8 +57,6 @@ export function setupSockets(
         isKaraokeLive = false;
         queue.length = 0;
         playlist.length = 0;
-        playlist.push({ id: 1, artist: "Radiohead", title: "Lucky" });
-        playlist.push({ id: 2, artist: "Rolling Stones", title: "Angel" });
 
         emitKaraokeState();
         console.log("Karaoke stopped by:", socket.id);
@@ -48,14 +65,26 @@ export function setupSockets(
 
     socket.on("song:chosen", (song: Song) => {
       if (isKaraokeLive) {
-        const songIndex = playlist.findIndex(
-          (elem) => elem.artist === song.artist && elem.title === song.title
-        );
-        if (songIndex >= 0) {
-          playlist.splice(songIndex, 1);
-          queue.push(song);
-          emitKaraokeState();
-        }
+        req.session.reload((err) => {
+          if (err) {
+            return socket.disconnect();
+          }
+
+          if (req.session.user && !req.session.user.songId) {
+            req.session.user = { ...req.session.user, songId: song.id };
+            req.session.save(() => {
+              const songIndex = playlist.findIndex(
+                (elem) =>
+                  elem.artist === song.artist && elem.title === song.title
+              );
+              if (songIndex >= 0) {
+                playlist.splice(songIndex, 1);
+                queue.push(song);
+                emitKaraokeState();
+              }
+            });
+          }
+        });
       }
     });
 
