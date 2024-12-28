@@ -23,5 +23,6 @@ export function setupSessionMiddleware() {
       sameSite: "lax", // Adjust for cross-origin compatibility
     },
   });
+
   return sessionMiddleware;
 }

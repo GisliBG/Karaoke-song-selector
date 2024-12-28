@@ -3,7 +3,8 @@ import { Song } from "shared/dist/karaoke";
 import { useKaraoke } from "../hooks/useKaraoke";
 
 export const Live = () => {
-  const { isConnected, isKaraokeLive, playlist, queue, socket } = useKaraoke();
+  const { isConnected, isKaraokeLive, playlist, queue, socket, session } =
+    useKaraoke();
 
   return isConnected ? (
     <div className='flex flex-col'>
@@ -14,8 +15,9 @@ export const Live = () => {
       </div>
       <div>
         <SongList>
-          {queue.map((song: Song) => (
+          {queue.map((song) => (
             <SongListItem
+              highlight={song.id === session?.songId}
               key={`${song.artist}-${song.title}`}
               artist={song.artist}
               title={song.title}
@@ -23,6 +25,18 @@ export const Live = () => {
           ))}
         </SongList>
       </div>
+      <button
+        disabled={session?.songId === undefined}
+        onClick={() => {
+          const songToCancel = queue.find((elem) => elem.id == session?.songId);
+
+          if (songToCancel) {
+            socket.emit("song:cancel", songToCancel);
+          }
+        }}
+      >
+        Chicken out!
+      </button>
       <div>
         <SongList>
           {playlist.map((song: Song) => (

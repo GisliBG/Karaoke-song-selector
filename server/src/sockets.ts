@@ -15,16 +15,22 @@ declare module "express-session" {
 export function setupSockets(
   httpServer: HttpServer,
   serverOptions: Partial<ServerOptions> = {},
-  session: RequestHandler | any
+  sessionMiddleware: RequestHandler | any
 ): Server<ClientEvents, ServerEvents> {
   const io = new Server<ClientEvents, ServerEvents>(httpServer, serverOptions);
-  io.engine.use(session);
+  io.engine.use(sessionMiddleware);
   let isKaraokeLive = false;
   let playlist: Song[] = [];
   let queue: Song[] = [];
   // Broadcast new state to all clients
   const emitKaraokeState = () => {
     io.emit("karaoke:state", { isKaraokeLive, playlist, queue });
+  };
+  const emitSessionData = (
+    sessionId: string,
+    user: { id: string; songId?: number }
+  ) => {
+    io.to(sessionId).emit("session-data", user);
   };
   io.on("connection", (socket) => {
     const req = socket.request as Request;
@@ -40,7 +46,7 @@ export function setupSockets(
       });
     }
     socket.emit("karaoke:state", { isKaraokeLive, playlist, queue });
-
+    emitSessionData(req.session.id, req.session.user);
     socket.on("karaoke:start", () => {
       if (!isKaraokeLive) {
         console.log("START");
@@ -53,13 +59,19 @@ export function setupSockets(
 
     socket.on("karaoke:stop", () => {
       if (isKaraokeLive) {
-        console.log("STOP");
-        isKaraokeLive = false;
-        queue.length = 0;
-        playlist.length = 0;
+        if (req.session.user) {
+          req.session.user.songId = undefined;
+          req.session.save(() => {
+            console.log("STOP");
+            isKaraokeLive = false;
+            queue.length = 0;
+            playlist.length = 0;
 
-        emitKaraokeState();
-        console.log("Karaoke stopped by:", socket.id);
+            emitKaraokeState();
+
+            console.log("Karaoke stopped by:", socket.id);
+          });
+        }
       }
     });
 
@@ -74,13 +86,35 @@ export function setupSockets(
             req.session.user = { ...req.session.user, songId: song.id };
             req.session.save(() => {
               const songIndex = playlist.findIndex(
-                (elem) =>
-                  elem.artist === song.artist && elem.title === song.title
+                (elem) => elem.id == song.id
               );
               if (songIndex >= 0) {
                 playlist.splice(songIndex, 1);
                 queue.push(song);
                 emitKaraokeState();
+                emitSessionData(req.session.id, req.session.user!);
+              }
+            });
+          }
+        });
+      }
+    });
+
+    socket.on("song:cancel", (song: Song) => {
+      if (isKaraokeLive) {
+        req.session.reload((err) => {
+          if (err) {
+            return socket.disconnect();
+          }
+          if (req.session.user) {
+            req.session.user = { ...req.session.user, songId: undefined };
+            req.session.save(() => {
+              const songIndex = queue.findIndex((elem) => elem.id == song.id);
+              if (songIndex >= 0) {
+                queue.splice(songIndex, 1);
+                playlist.push(song);
+                emitKaraokeState();
+                emitSessionData(req.session.id, req.session.user!);
               }
             });
           }

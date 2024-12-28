@@ -1,4 +1,5 @@
 import React from "react";
+import { SessionUser } from "shared/dist/events";
 import { Song } from "shared/dist/karaoke";
 import io from "socket.io-client";
 
@@ -11,6 +12,7 @@ export const useKaraoke = () => {
   const [isKaraokeLive, setIsKaraokeLive] = React.useState<boolean>(false);
   const [playlist, setPlaylist] = React.useState<Song[]>([]);
   const [queue, setQueue] = React.useState<Song[]>([]);
+  const [session, setSession] = React.useState<SessionUser>();
 
   React.useEffect(() => {
     socket.on("connect", () => {
@@ -38,5 +40,15 @@ export const useKaraoke = () => {
       socket.off("karaoke:state");
     };
   }, []);
-  return { isConnected, isKaraokeLive, playlist, queue, socket };
+
+  React.useEffect(() => {
+    socket.on("session-data", (session: SessionUser) => {
+      setSession(session);
+    });
+
+    return () => {
+      socket.off("session-data");
+    };
+  });
+  return { isConnected, isKaraokeLive, playlist, queue, socket, session };
 };
