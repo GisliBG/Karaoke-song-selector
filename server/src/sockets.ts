@@ -123,8 +123,21 @@ export function setupSockets(
     });
 
     socket.on("song:next", () => {
-      queue.shift();
-      emitKaraokeState();
+      if (isKaraokeLive) {
+        req.session.reload((err) => {
+          if (err) {
+            return socket.disconnect();
+          }
+          if (req.session.user) {
+            req.session.user = { ...req.session.user, songId: undefined };
+            req.session.save(() => {
+              queue.shift();
+              emitKaraokeState();
+              emitSessionData(req.session.id, req.session.user!);
+            });
+          }
+        });
+      }
     });
   });
 

@@ -10,9 +10,13 @@ export const Band = () => {
     <div className='flex flex-col'>
       {isConnected ? (
         isKaraokeLive ? (
-          <button onClick={() => socket.emit("karaoke:stop")}>Stop</button>
+          <button onClick={() => socket.emit("karaoke:stop")}>
+            Stop Karaoke
+          </button>
         ) : (
-          <button onClick={() => socket.emit("karaoke:start")}>Start</button>
+          <button onClick={() => socket.emit("karaoke:start")}>
+            Start Karaoke
+          </button>
         )
       ) : (
         <div>Loading....</div>
@@ -21,11 +25,20 @@ export const Band = () => {
         <div>
           <h2>Karaoke is live!</h2>
           <SongList>
-            {queue.map((song: Song) => (
+            {queue.map((song: Song, index: number) => (
               <SongListItem
                 key={`${song.artist}-${song.title}`}
                 artist={song.artist}
                 title={song.title}
+                options={
+                  index === 0 && (
+                    <div>
+                      <button onClick={() => socket.emit("song:next")}>
+                        Song Finished
+                      </button>
+                    </div>
+                  )
+                }
               />
             ))}
           </SongList>

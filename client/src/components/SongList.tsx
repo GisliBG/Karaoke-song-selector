@@ -9,6 +9,7 @@ export const SongListItem = (props: {
   title: string;
   key: string;
   highlight?: boolean;
+  options?: React.ReactNode;
   onClick?: (event: React.MouseEvent) => void;
 }) => (
   <li
@@ -30,5 +31,6 @@ export const SongListItem = (props: {
       <p className='text-2xl font-semibold text-white-900'>{props.artist}</p>
       <p className='text-white-600'>{props.title}</p>
     </div>
+    {props.options && <div className='flex-grow'>{props.options}</div>}
   </li>
 );
