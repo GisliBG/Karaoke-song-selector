@@ -28,6 +28,7 @@ export interface ServerEvents {
     queue: Song[];
   }) => void;
   "session-data": (sessionUser: SessionUser) => void;
+  "session-refresh": () => void;
 }
 
 export interface ClientEvents {

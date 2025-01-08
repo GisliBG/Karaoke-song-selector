@@ -49,6 +49,7 @@ export const useKaraoke = () => {
     return () => {
       socket.off("session-data");
     };
-  });
+  }, []);
+
   return { isConnected, isKaraokeLive, playlist, queue, socket, session };
 };
