@@ -5,6 +5,7 @@ export type TodoID = string;
 export interface SessionUser {
   id: string;
   songId?: number;
+  userName?: string;
 }
 interface Error {
   error: string;
@@ -27,8 +28,7 @@ export interface ServerEvents {
     playlist: Song[];
     queue: Song[];
   }) => void;
-  "session-data": (sessionUser: SessionUser) => void;
-  "session-refresh": () => void;
+  "session:data": (sessionUser: SessionUser) => void;
 }
 
 export interface ClientEvents {
@@ -37,4 +37,5 @@ export interface ClientEvents {
   "song:chosen": (song: Song) => void;
   "song:cancel": (song: Song) => void;
   "song:next": () => void;
+  "session:username": (userName: string) => void;
 }

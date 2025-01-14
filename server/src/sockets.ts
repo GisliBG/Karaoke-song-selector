@@ -1,14 +1,14 @@
 import { ClientEvents, ServerEvents } from "shared/dist/events";
 import { Server as HttpServer } from "http";
 import { Server, ServerOptions } from "socket.io";
-import { Song } from "shared/dist/karaoke";
+import { Song, QueueSong } from "shared/dist/karaoke";
 import { getKaraokePlaylist } from "./repository/catalog.repository";
 import { type Request, type RequestHandler } from "express";
 import { generateId } from "./utils";
 
 declare module "express-session" {
   interface SessionData {
-    user: { id: string; songId?: number };
+    user: { id: string; songId?: number; userName?: string };
   }
 }
 
@@ -21,16 +21,16 @@ export function setupSockets(
   io.engine.use(sessionMiddleware);
   let isKaraokeLive = false;
   let playlist: Song[] = [];
-  let queue: Song[] = [];
+  let queue: QueueSong[] = [];
   // Broadcast new state to all clients
   const emitKaraokeState = () => {
     io.emit("karaoke:state", { isKaraokeLive, playlist, queue });
   };
   const emitSessionData = (
     sessionId: string,
-    user: { id: string; songId?: number }
+    user: { id: string; songId?: number; userName?: string }
   ) => {
-    io.to(sessionId).emit("session-data", user);
+    io.to(sessionId).emit("session:data", user);
   };
   io.on("connection", (socket) => {
     const req = socket.request as Request;
@@ -98,7 +98,7 @@ export function setupSockets(
               );
               if (songIndex >= 0) {
                 playlist.splice(songIndex, 1);
-                queue.push(song);
+                queue.push({ ...song, userName: req.session.user?.userName! });
                 emitKaraokeState();
                 emitSessionData(req.session.id, req.session.user!);
               }
@@ -141,10 +141,22 @@ export function setupSockets(
       }
     });
 
+    socket.on("session:username", (userName: string) => {
+      if (userName.length > 2) {
+        saveSessionChange(
+          req,
+          () => {
+            emitSessionData(req.session.id, req.session.user!);
+          },
+          { ...req.session.user!, userName: userName }
+        );
+      }
+    });
+
     const saveSessionChange = (
       req: Request,
       cb: () => void,
-      user: { id: string; songId?: number }
+      user: { id: string; songId?: number; userName?: string }
     ) => {
       req.session.reload((err) => {
         if (err) {

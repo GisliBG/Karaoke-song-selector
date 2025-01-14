@@ -5,3 +5,5 @@ export type Song = {
 };
 
 export type CatalogSong = Song & { selctedForKaraoke: boolean };
+
+export type QueueSong = Song & { userName: string };

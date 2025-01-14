@@ -1,6 +1,6 @@
 import React from "react";
 import { SessionUser } from "shared/dist/events";
-import { Song } from "shared/dist/karaoke";
+import { QueueSong, Song } from "shared/dist/karaoke";
 import io from "socket.io-client";
 
 const socket = io("http://localhost:3000", { withCredentials: true });
@@ -11,7 +11,7 @@ export const useKaraoke = () => {
   );
   const [isKaraokeLive, setIsKaraokeLive] = React.useState<boolean>(false);
   const [playlist, setPlaylist] = React.useState<Song[]>([]);
-  const [queue, setQueue] = React.useState<Song[]>([]);
+  const [queue, setQueue] = React.useState<QueueSong[]>([]);
   const [session, setSession] = React.useState<SessionUser>();
 
   React.useEffect(() => {
@@ -42,12 +42,13 @@ export const useKaraoke = () => {
   }, []);
 
   React.useEffect(() => {
-    socket.on("session-data", (session: SessionUser) => {
+    socket.on("session:data", (session: SessionUser) => {
+      console.log(session);
       setSession(session);
     });
 
     return () => {
-      socket.off("session-data");
+      socket.off("session:data");
     };
   }, []);
 
