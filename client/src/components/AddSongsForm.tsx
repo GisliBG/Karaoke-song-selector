@@ -1,21 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { SubmitHandler, useForm } from "react-hook-form";
-//import { Song } from "shared/dist/karaoke";
-
-const Input = (
-  props: React.PropsWithChildren<{
-    title: string;
-  }>
-) => {
-  return (
-    <div className='flex gap-4 '>
-      <label className='flex-grow' htmlFor={props.title}>
-        {props.title}
-      </label>
-      {props.children}
-    </div>
-  );
-};
+import { Input } from "./ui/Input";
+import { Button } from "./ui/Button";
 
 const addSong = async (song: { artist: string; title: string }) => {
   if (song.artist && song.title) {
@@ -58,19 +44,18 @@ const AddSongsForm = () => {
     <>
       <form onSubmit={handleSubmit(onSubmit)}>
         <div className='flex flex-col gap-2 w-3/4'>
-          <Input title='Artist'>
-            <input id='Artist' {...register("artist")} />
-          </Input>
-          <Input title='Title'>
-            <input id='title' {...register("title")} />
-          </Input>
+          <div className='flex gap-2'>
+            <Input label='Artist' {...register("artist")} />
+            <Input label='Title' {...register("title")} />
+          </div>
+
           <div className='self-end'>
-            <button
-              className='bg-blue-500 hover:bg-blue-600 text-white font-semibold py-1 px-2 rounded-lg shadow-md transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75'
+            <Button
+              className='bg-blue-500 hover:bg-blue-600 font-semibold py-1 px-2 rounded-lg shadow-md transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75'
               type='submit'
             >
               Add to catalog
-            </button>
+            </Button>
           </div>
         </div>
       </form>

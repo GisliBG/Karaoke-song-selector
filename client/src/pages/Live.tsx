@@ -2,6 +2,8 @@ import { Fragment, useState } from "react";
 import { SongList, SongListItem } from "../components/SongList";
 import { Song } from "shared/dist/karaoke";
 import { useKaraoke } from "../hooks/useKaraoke";
+import { Button } from "../components/ui/Button";
+import { Input } from "../components/ui/Input";
 
 export const Live = () => {
   const { isConnected, isKaraokeLive, playlist, queue, socket, session } =
@@ -12,19 +14,19 @@ export const Live = () => {
     <div className='flex flex-col'>
       {!session?.userName ? (
         <div>
-          <input
+          <Input
             type='text'
             placeholder='Please enter your name'
             value={userName}
             onChange={(e) => setUserName(e.target.value)}
           />
-          <button
+          <Button
             onClick={() => {
               socket.emit("session:username", userName);
             }}
           >
             Submit
-          </button>
+          </Button>
         </div>
       ) : (
         <Fragment>
@@ -48,7 +50,7 @@ export const Live = () => {
           </div>
           <div className='flex gap-2'>
             <div>{session.userName.toString()}</div>
-            <button
+            <Button
               disabled={session?.songId === undefined}
               onClick={() => {
                 const songToCancel = queue.find(
@@ -61,7 +63,7 @@ export const Live = () => {
               }}
             >
               Chicken out!
-            </button>
+            </Button>
           </div>
           <div>
             <SongList>

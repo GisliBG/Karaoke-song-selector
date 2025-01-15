@@ -30,7 +30,6 @@ export const useKaraoke = () => {
 
   React.useEffect(() => {
     socket.on("karaoke:state", (state) => {
-      console.log(state);
       setIsKaraokeLive(state.isKaraokeLive);
       setPlaylist(state.playlist ?? []);
       setQueue(state.queue ?? []);

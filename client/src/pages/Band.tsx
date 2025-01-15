@@ -3,6 +3,7 @@ import { NavLink } from "react-router";
 import { useKaraoke } from "../hooks/useKaraoke";
 import { SongList, SongListItem } from "../components/SongList";
 import { Song } from "shared/dist/karaoke";
+import { Button } from "../components/ui/Button";
 
 export const Band = () => {
   const { socket, isKaraokeLive, isConnected, queue } = useKaraoke();
@@ -10,13 +11,13 @@ export const Band = () => {
     <div className='flex flex-col'>
       {isConnected ? (
         isKaraokeLive ? (
-          <button onClick={() => socket.emit("karaoke:stop")}>
+          <Button onClick={() => socket.emit("karaoke:stop")}>
             Stop Karaoke
-          </button>
+          </Button>
         ) : (
-          <button onClick={() => socket.emit("karaoke:start")}>
+          <Button onClick={() => socket.emit("karaoke:start")}>
             Start Karaoke
-          </button>
+          </Button>
         )
       ) : (
         <div>Loading....</div>
@@ -33,9 +34,9 @@ export const Band = () => {
                 options={
                   index === 0 && (
                     <div>
-                      <button onClick={() => socket.emit("song:next")}>
+                      <Button onClick={() => socket.emit("song:next")}>
                         Song Finished
-                      </button>
+                      </Button>
                     </div>
                   )
                 }
