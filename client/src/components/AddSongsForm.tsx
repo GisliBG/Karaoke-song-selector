@@ -41,9 +41,9 @@ const AddSongsForm = () => {
   };
 
   return (
-    <>
-      <form onSubmit={handleSubmit(onSubmit)}>
-        <div className='flex flex-col gap-2 w-3/4'>
+    <div className='flex justify-end items-center w-full'>
+      <form onSubmit={handleSubmit(onSubmit)} className='w-[256px]'>
+        <div className='flex flex-col gap-2'>
           <div className='flex gap-2'>
             <Input label='Artist' {...register("artist")} />
             <Input label='Title' {...register("title")} />
@@ -59,7 +59,7 @@ const AddSongsForm = () => {
           </div>
         </div>
       </form>
-    </>
+    </div>
   );
 };
 

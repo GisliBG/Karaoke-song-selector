@@ -19,6 +19,7 @@ export const Input = React.forwardRef(
           className={`
           block w-full rounded-md border-secondary-300 shadow-sm
           focus:border-primary-500 focus:ring-primary-500
+          text-black
           disabled:cursor-not-allowed disabled:bg-secondary-50 disabled:text-secondary-500
           ${error ? "border-red-500" : ""}
           ${className}

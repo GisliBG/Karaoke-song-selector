@@ -11,9 +11,9 @@ export const Live = () => {
   const [userName, setUserName] = useState<string>(session?.userName ?? "");
 
   return isConnected ? (
-    <div className='flex flex-col'>
+    <div className='flex flex-col justify-center min-h-[256px]'>
       {!session?.userName ? (
-        <div>
+        <div className='flex flex-col justify-center items-center gap-4 max-w-[256px]'>
           <Input
             type='text'
             placeholder='Please enter your name'

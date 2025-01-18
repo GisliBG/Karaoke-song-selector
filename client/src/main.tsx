@@ -9,6 +9,7 @@ import Providers from "./providers";
 import Catalog from "./pages/Catalog.tsx";
 import { Band } from "./pages/Band.tsx";
 import Playlist from "./pages/Playlist.tsx";
+import Controls from "./pages/Controls.tsx";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
@@ -17,7 +18,8 @@ createRoot(document.getElementById("root")!).render(
         <Routes>
           <Route index element={<App />} />
           <Route path='/live' element={<Live />} />
-          <Route path='band' element={<Band />}>
+          <Route path='/band' element={<Band />}>
+            <Route index path='controls' element={<Controls />} />
             <Route path='catalog' element={<Catalog />} />
             <Route index path='playlist' element={<Playlist />} />
           </Route>
