@@ -41,15 +41,15 @@ export const useKaraoke = () => {
   }, []);
 
   React.useEffect(() => {
-    socket.on("session:data", (session: SessionUser) => {
-      console.log(session);
-      setSession(session);
+    socket.on("session:data", (newSession: SessionUser) => {
+      console.log(newSession);
+      setSession(newSession);
     });
 
     return () => {
       socket.off("session:data");
     };
-  }, []);
+  }, [session]);
 
   return { isConnected, isKaraokeLive, playlist, queue, socket, session };
 };

@@ -82,14 +82,14 @@ export function setupSockets(
 
             console.log("Karaoke stopped by:", socket.id);
           },
-          { ...req.session.user!, songId: undefined }
+          { songId: undefined }
         );
       }
     });
 
     socket.on("song:chosen", (song: Song) => {
       if (isKaraokeLive) {
-        if (req.session.user && !req.session.user.songId) {
+        if (req.session.user) {
           saveSessionChange(
             req,
             () => {
@@ -98,12 +98,16 @@ export function setupSockets(
               );
               if (songIndex >= 0) {
                 playlist.splice(songIndex, 1);
-                queue.push({ ...song, userName: req.session.user?.userName! });
+                queue.push({
+                  ...song,
+                  userName: req.session.user?.userName!,
+                });
                 emitKaraokeState();
+
                 emitSessionData(req.session.id, req.session.user!);
               }
             },
-            { ...req.session.user!, songId: song.id }
+            { songId: song.id }
           );
         }
       }
@@ -122,7 +126,7 @@ export function setupSockets(
               emitSessionData(req.session.id, req.session.user!);
             }
           },
-          { ...req.session.user!, songId: undefined }
+          { songId: undefined }
         );
       }
     });
@@ -136,7 +140,7 @@ export function setupSockets(
             emitKaraokeState();
             emitSessionData(req.session.id, req.session.user!);
           },
-          { ...req.session.user!, songId: undefined }
+          { songId: undefined }
         );
       }
     });
@@ -148,7 +152,7 @@ export function setupSockets(
           () => {
             emitSessionData(req.session.id, req.session.user!);
           },
-          { ...req.session.user!, userName: userName }
+          { userName: userName }
         );
       }
     });
@@ -156,17 +160,22 @@ export function setupSockets(
     const saveSessionChange = (
       req: Request,
       cb: () => void,
-      user: { id: string; songId?: number; userName?: string }
+      user: Partial<{ id: string; songId?: number; userName?: string }>
     ) => {
       req.session.reload((err) => {
         if (err) {
           return socket.disconnect();
         }
         if (req.session.user) {
-          req.session.user = user || req.session.user;
-          req.session.save(() => {
-            cb();
-          });
+          if (
+            (req.session.user.songId && !user.songId) ||
+            (!req.session.user.songId && user.songId)
+          ) {
+            req.session.user = { ...req.session.user, ...user };
+            req.session.save(() => {
+              cb();
+            });
+          }
         }
       });
     };
