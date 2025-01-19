@@ -6,6 +6,7 @@ export interface SessionUser {
   id: string;
   songId?: number;
   userName?: string;
+  adming?: boolean;
 }
 interface Error {
   error: string;

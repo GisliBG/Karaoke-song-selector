@@ -8,7 +8,7 @@ import { generateId } from "./utils";
 
 declare module "express-session" {
   interface SessionData {
-    user: { id: string; songId?: number; userName?: string };
+    user: { id: string; songId?: number; userName?: string; admin?: boolean };
   }
 }
 
