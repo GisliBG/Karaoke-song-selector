@@ -147,13 +147,17 @@ export function setupSockets(
 
     socket.on("session:username", (userName: string) => {
       if (userName.length > 2) {
-        saveSessionChange(
-          req,
-          () => {
-            emitSessionData(req.session.id, req.session.user!);
-          },
-          { userName: userName }
-        );
+        req.session.reload((err) => {
+          if (err) {
+            return socket.disconnect();
+          }
+          if (req.session.user) {
+            req.session.user = { ...req.session.user, userName };
+            req.session.save(() => {
+              emitSessionData(req.session.id, req.session.user!);
+            });
+          }
+        });
       }
     });
 
